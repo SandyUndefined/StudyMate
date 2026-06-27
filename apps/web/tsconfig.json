@@ -19,7 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@studymate/shared": ["../../packages/shared/src"],
+      "@studymate/shared/*": ["../../packages/shared/src/*"]
     }
   },
   "include": [
