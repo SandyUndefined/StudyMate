@@ -52,7 +52,8 @@ export class PrismaJournalRepository implements IJournalRepository {
         sentimentScore: analysis.sentimentScore,
         sentimentLabel: analysis.sentimentLabel,
         energyInferred: analysis.energyLevel,
-        stressTriggers: analysis.stressTriggers,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        stressTriggers: analysis.stressTriggers as any,
         cognitiveDistortions: analysis.cognitiveDistortions,
         crisisLevel: analysis.crisisAssessment.level,
         keyThemes: analysis.keyThemes,
@@ -66,7 +67,8 @@ export class PrismaJournalRepository implements IJournalRepository {
     since.setDate(since.getDate() - lookbackDays)
 
     const entries = await this.db.journalEntry.findMany({
-      where: { userId, createdAt: { gte: since }, stressTriggers: { not: null } },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      where: { userId, createdAt: { gte: since }, stressTriggers: { not: null } as any },
       select: { stressTriggers: true, createdAt: true },
     })
 
