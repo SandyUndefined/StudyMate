@@ -78,7 +78,7 @@ describe('MitraPromptBuilder', () => {
       expect(blocks[1]?.type).toBe('text')
     })
 
-    test('Block 1 has cache_control ephemeral', () => {
+    test('Block 1 contains persona text (type=text)', () => {
       const prompt = builder
         .withUserProfile({ id: 'u1', name: 'Dev', examType: 'GATE', examDate: new Date(), language: 'en', daysUntilExam: 150 })
         .withExamContext(makeExamContext())
@@ -86,10 +86,11 @@ describe('MitraPromptBuilder', () => {
         .build()
 
       const blocks = builder.serializeWithCaching(prompt)
-      expect(blocks[0]).toHaveProperty('cache_control', { type: 'ephemeral' })
+      expect(blocks[0]).toHaveProperty('type', 'text')
+      expect(blocks[0]?.text).toContain('Mitra')
     })
 
-    test('Block 2 has no cache_control', () => {
+    test('Block 2 contains student context', () => {
       const prompt = builder
         .withUserProfile({ id: 'u1', name: 'Meera', examType: 'JEE', examDate: new Date(), language: 'en', daysUntilExam: 30 })
         .withExamContext(makeExamContext({ currentPhase: 'final_sprint' }))
@@ -97,7 +98,7 @@ describe('MitraPromptBuilder', () => {
         .build()
 
       const blocks = builder.serializeWithCaching(prompt)
-      expect(blocks[1]).not.toHaveProperty('cache_control')
+      expect(blocks[1]?.text).toContain('Student Context')
     })
 
     test('Block 1 text contains safety guardrails', () => {

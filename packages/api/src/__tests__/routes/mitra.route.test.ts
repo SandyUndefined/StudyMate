@@ -1,14 +1,15 @@
 process.env['JWT_SECRET'] = 'test-jwt-secret-at-least-32-characters-long'
 
-jest.mock('@anthropic-ai/sdk', () => ({
+jest.mock('openai', () => ({
   __esModule: true,
   default: jest.fn().mockImplementation(() => ({
-    beta: {
-      promptCaching: {
-        messages: { create: jest.fn().mockResolvedValue({ content: [{ type: 'text', text: "I'm here with you." }] }) },
+    chat: {
+      completions: {
+        create: jest.fn().mockResolvedValue({
+          choices: [{ message: { content: "I'm here with you." } }],
+        }),
       },
     },
-    messages: { create: jest.fn() },
   })),
 }))
 

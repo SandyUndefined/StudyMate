@@ -2,7 +2,7 @@
  * Crisis Detector — unit + accuracy suite
  *
  * Layer 1 (keyword) tests run synchronously without any network calls.
- * Layer 2 (semantic) tests mock the Anthropic client.
+ * Layer 2 (semantic) tests mock the OpenAI client.
  *
  * Accuracy targets (Layer 1 only):
  *   Critical recall  ≥ 95% — false negatives are safety failures
@@ -12,10 +12,10 @@
 
 const mockCreate = jest.fn()
 
-jest.mock('@anthropic-ai/sdk', () => ({
+jest.mock('openai', () => ({
   __esModule: true,
   default: jest.fn().mockImplementation(() => ({
-    messages: { create: mockCreate },
+    chat: { completions: { create: mockCreate } },
   })),
 }))
 
@@ -23,9 +23,8 @@ import { assessCrisisRisk, buildCrisisEscalationMessage } from '../../ai/crisis-
 
 function makeSemanticResponse(level: string, triggerPhrases: string[] = [], confidence = 0.8) {
   mockCreate.mockResolvedValueOnce({
-    content: [{
-      type: 'text',
-      text: JSON.stringify({ level, triggerPhrases, confidence, reasoning: 'test' }),
+    choices: [{
+      message: { content: JSON.stringify({ level, triggerPhrases, confidence, reasoning: 'test' }) },
     }],
   })
 }
@@ -150,14 +149,13 @@ describe('Crisis Detector — benign text (no false positives)', () => {
 describe('Crisis Detector — Layer 2 escalation', () => {
   test('Layer 2 "high" upgrades Layer 1 "none"', async () => {
     mockCreate.mockResolvedValueOnce({
-      content: [{
-        type: 'text',
-        text: JSON.stringify({
+      choices: [{
+        message: { content: JSON.stringify({
           level: 'high',
           triggerPhrases: ['I see no future for myself'],
           confidence: 0.85,
           reasoning: 'indirect ideation',
-        }),
+        }) },
       }],
     })
 
@@ -180,7 +178,7 @@ describe('Crisis Detector — Layer 2 escalation', () => {
 
   test('malformed AI response falls back to Layer 1', async () => {
     mockCreate.mockResolvedValueOnce({
-      content: [{ type: 'text', text: 'not json at all' }],
+      choices: [{ message: { content: 'not json at all' } }],
     })
     const result = await assessCrisisRisk('I feel worthless')
     expect(['none', 'moderate', 'high', 'critical']).toContain(result.level)

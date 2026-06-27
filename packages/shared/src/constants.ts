@@ -64,12 +64,12 @@ export const RATE_LIMITS = {
 
 // AI model selection per use case
 export const AI_MODELS = {
-  MITRA_CONVERSATION: 'claude-sonnet-4-6',
-  CRISIS_ASSESSMENT: 'claude-sonnet-4-6',
-  JOURNAL_ANALYSIS: 'claude-haiku-4-5-20251001',
-  MOOD_RESPONSE: 'claude-haiku-4-5-20251001',
-  WEEKLY_INSIGHT: 'claude-sonnet-4-6',
-  CONTEXT_SUMMARIZER: 'claude-haiku-4-5-20251001',
+  MITRA_CONVERSATION: 'gpt-4o',
+  CRISIS_ASSESSMENT: 'gpt-4o',
+  JOURNAL_ANALYSIS: 'gpt-4o-mini',
+  MOOD_RESPONSE: 'gpt-4o-mini',
+  WEEKLY_INSIGHT: 'gpt-4o',
+  CONTEXT_SUMMARIZER: 'gpt-4o-mini',
 } as const
 
 // Context window management

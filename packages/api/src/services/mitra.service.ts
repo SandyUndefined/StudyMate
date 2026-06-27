@@ -1,5 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
-import type { PromptCachingBetaTextBlockParam } from '@anthropic-ai/sdk/resources/beta/prompt-caching/messages'
+import OpenAI from 'openai'
 import { AI_MODELS, AI_CONTEXT } from '@studymate/shared'
 import type {
   MitraResponse,
@@ -14,7 +13,7 @@ import type { IUserRepository } from '../db/repositories/interfaces'
 import { computeExamContext } from './exam-context'
 import type { CrisisService } from './crisis.service'
 
-const anthropic = new Anthropic()
+const openai = new OpenAI()
 
 export class MitraService {
   constructor(
@@ -79,33 +78,34 @@ export class MitraService {
       .withExamContext(examContext)
       .build()
 
-    // Cached system blocks: static persona cached, dynamic context not cached
-    const systemBlocks = promptBuilder.serializeWithCaching(prompt)
-
     // Get last N messages for conversation context (bounded to control tokens)
     const recentMessages = await this.sessions.getRecentMessages(
       session.id,
       AI_CONTEXT.MAX_CONVERSATION_TURNS
     )
 
-    // If crisis is critical, prepend the escalation message to Mitra's response
+    // If crisis is critical/high, prepend the escalation message instead of calling AI
     let assistantContent: string
     if (crisisAssessment.level === 'critical' || crisisAssessment.level === 'high') {
-      const escalation = buildCrisisEscalationMessage(user.language)
-      assistantContent = escalation
+      assistantContent = buildCrisisEscalationMessage(user.language)
     } else {
-      const aiResponse = await anthropic.beta.promptCaching.messages.create({
+      const systemMessages = promptBuilder.serializeForOpenAI(prompt)
+
+      const aiResponse = await openai.chat.completions.create({
         model: AI_MODELS.MITRA_CONVERSATION,
         max_tokens: 512,
-        system: systemBlocks as PromptCachingBetaTextBlockParam[],
-        messages: recentMessages.map((m) => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: [
+          ...systemMessages,
+          ...recentMessages.map((m) => ({
+            role: m.role as 'user' | 'assistant',
+            content: m.content,
+          })),
+        ],
       })
 
-      const content = aiResponse.content[0]
-      assistantContent = content?.type === 'text' ? content.text : "I'm here with you. Take a breath — what's on your mind?"
+      assistantContent =
+        aiResponse.choices[0]?.message.content ??
+        "I'm here with you. Take a breath — what's on your mind?"
     }
 
     const assistantMessage = await this.sessions.addMessage(session.id, {
@@ -135,7 +135,6 @@ export class MitraService {
     userId: string,
     feedback: InterventionFeedbackInput
   ): Promise<void> {
-    // Stored via InterventionCompletion — implementation deferred to Phase 3
     void userId
     void feedback
   }

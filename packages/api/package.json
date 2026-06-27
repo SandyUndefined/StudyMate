@@ -11,7 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.27.0",
+    "openai": "^4.77.0",
     "@prisma/client": "^5.19.0",
     "@studymate/shared": "*",
     "@types/cookie-parser": "^1.4.10",

@@ -8,14 +8,14 @@ interface Env {
   DATABASE_URL: string
   JWT_SECRET: string
   JWT_REFRESH_SECRET: string
-  ANTHROPIC_API_KEY: string
+  OPENAI_API_KEY: string
   PORT: number
   CLIENT_ORIGIN: string
   NODE_ENV: 'development' | 'test' | 'production'
   COOKIE_SECURE: boolean
 }
 
-const REQUIRED = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET', 'ANTHROPIC_API_KEY'] as const
+const REQUIRED = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET', 'OPENAI_API_KEY'] as const
 
 export function loadEnv(): Env {
   const missing = REQUIRED.filter((key) => !process.env[key])
@@ -32,7 +32,7 @@ export function loadEnv(): Env {
     DATABASE_URL: process.env['DATABASE_URL']!,
     JWT_SECRET: process.env['JWT_SECRET']!,
     JWT_REFRESH_SECRET: process.env['JWT_REFRESH_SECRET']!,
-    ANTHROPIC_API_KEY: process.env['ANTHROPIC_API_KEY']!,
+    OPENAI_API_KEY: process.env['OPENAI_API_KEY']!,
     PORT: Number(process.env['PORT'] ?? 4000),
     CLIENT_ORIGIN: process.env['CLIENT_ORIGIN'] ?? 'http://localhost:3000',
     NODE_ENV: nodeEnv,

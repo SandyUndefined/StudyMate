@@ -28,7 +28,7 @@ function makeEnv(): Env {
     DATABASE_URL: 'postgresql://test',
     JWT_SECRET: 'test-jwt-secret-at-least-32-characters-long',
     JWT_REFRESH_SECRET: 'test-refresh-secret-at-least-32-characters',
-    ANTHROPIC_API_KEY: 'test-key',
+    OPENAI_API_KEY: 'test-key',
     CLIENT_ORIGIN: 'http://localhost:3000',
     COOKIE_SECURE: false,
   }

@@ -1,5 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk'
-import type { PromptCachingBetaTextBlockParam } from '@anthropic-ai/sdk/resources/beta/prompt-caching/messages'
 import type {
   EmotionalSummary,
   ExamContext,
@@ -8,7 +6,7 @@ import type {
 } from '@studymate/shared'
 
 /**
- * Builds the structured system prompt sent to Claude for each Mitra conversation.
+ * Builds the structured system prompt sent to GPT-4o for each Mitra conversation.
  * Separates prompt construction from AI execution so both can be tested independently.
  *
  * Usage:
@@ -57,18 +55,11 @@ export class MitraPromptBuilder {
   }
 
   /**
-   * Serialises the prompt into the structured system array format for the Claude Messages API.
-   *
-   * Prompt caching strategy:
-   * - Block 1 (CACHEABLE): base persona + safety guardrails — static, changes never.
-   *   Marked with cache_control: { type: 'ephemeral' } so Claude caches it for 5 minutes.
-   *   Saves ~80% of system prompt tokens on every subsequent turn in a session.
-   * - Block 2 (DYNAMIC): student context + emotional history — changes per user/session.
-   *   Not cached — different per request.
-   *
-   * @see https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching
+   * Serialises the prompt into OpenAI system message format.
+   * Returns an array of { role: 'system', content } objects — persona/safety block
+   * first, then the dynamic per-student context block.
    */
-  serializeWithCaching(prompt: MitraSystemPrompt): PromptCachingBetaTextBlockParam[] {
+  serializeForOpenAI(prompt: MitraSystemPrompt): Array<{ role: 'system'; content: string }> {
     const phaseGuidance =
       PHASE_GUIDANCE[prompt.examContext.currentPhase] ?? PHASE_GUIDANCE['foundation']!
 
@@ -89,23 +80,22 @@ ${phaseGuidance}
 ${historySection}`
 
     return [
-      // Block 1: CACHEABLE — static persona and safety rules
-      {
-        type: 'text' as const,
-        text: `${prompt.basePersona}\n\n## Safety Guardrails\n${prompt.safetyGuardrails}`,
-        cache_control: { type: 'ephemeral' as const },
-      } satisfies PromptCachingBetaTextBlockParam,
-      // Block 2: DYNAMIC — per-student, per-session context (not cached)
-      {
-        type: 'text' as const,
-        text: dynamicBlock,
-      } satisfies PromptCachingBetaTextBlockParam,
+      { role: 'system', content: `${prompt.basePersona}\n\n## Safety Guardrails\n${prompt.safetyGuardrails}` },
+      { role: 'system', content: dynamicBlock },
     ]
   }
 
   /** Plain string serialisation — kept for tests and fallback use */
   serialize(prompt: MitraSystemPrompt): string {
-    return this.serializeWithCaching(prompt).map((b) => b.text).join('\n\n')
+    return this.serializeForOpenAI(prompt).map((b) => b.content).join('\n\n')
+  }
+
+  /**
+   * @deprecated Use serializeForOpenAI — kept only so existing tests compile.
+   * Returns same shape as before but without cache_control.
+   */
+  serializeWithCaching(prompt: MitraSystemPrompt): Array<{ type: 'text'; text: string }> {
+    return this.serializeForOpenAI(prompt).map((b) => ({ type: 'text' as const, text: b.content }))
   }
 
   private buildPersona(): string {

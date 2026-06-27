@@ -7,7 +7,7 @@ const PROTECTED_PREFIXES = ['/journal', '/mood', '/chat', '/dashboard']
 // Routes only for unauthenticated users (redirect to /journal if logged in)
 const AUTH_ONLY_ROUTES = ['/auth/login', '/auth/register']
 
-export function middleware(request: NextRequest): NextResponse {
+export function proxy(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl
 
   // Check for the refresh token cookie — its presence signals a live session.

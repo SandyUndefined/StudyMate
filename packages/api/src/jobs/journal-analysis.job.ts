@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import type { JournalAnalysis } from '@studymate/shared'
 import { COGNITIVE_DISTORTIONS } from '@studymate/shared'
 import { selectModel, TOKEN_BUDGETS } from '../ai/model-router'
@@ -6,7 +6,7 @@ import { assessCrisisRisk } from '../ai/crisis-detector'
 import type { PrismaJournalRepository } from '../db/repositories/journal.repository'
 import type { CrisisService } from '../services/crisis.service'
 
-const anthropic = new Anthropic()
+const openai = new OpenAI()
 
 export interface JournalAnalysisPayload {
   entryId: string
@@ -85,14 +85,15 @@ Return ONLY valid JSON with this exact structure:
 
 Only include stressTriggers mentioned negatively (max 5). Empty arrays are valid.`
 
-  const response = await anthropic.messages.create({
+  const response = await openai.chat.completions.create({
     model: selectModel('journal_analysis'),
     max_tokens: TOKEN_BUDGETS.journal_analysis,
+    response_format: { type: 'json_object' },
     messages: [{ role: 'user', content: prompt }],
   })
 
-  const block = response.content[0]
-  if (block?.type !== 'text') throw new Error('Unexpected response from journal analysis AI')
+  const content = response.choices[0]?.message.content
+  if (!content) throw new Error('Unexpected empty response from journal analysis AI')
 
-  return JSON.parse(block.text) as Omit<JournalAnalysis, 'crisisAssessment' | 'analysedAt'>
+  return JSON.parse(content) as Omit<JournalAnalysis, 'crisisAssessment' | 'analysedAt'>
 }

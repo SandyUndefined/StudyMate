@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { AI_MODELS, CRISIS_HELPLINES } from '@studymate/shared'
 import type { CrisisAction, CrisisAssessment, CrisisLevel } from '@studymate/shared'
 
@@ -6,16 +6,14 @@ import type { CrisisAction, CrisisAssessment, CrisisLevel } from '@studymate/sha
  * Three-layer crisis detection system.
  *
  * Layer 1: Synchronous keyword/phrase matching (fast, no AI call)
- * Layer 2: Claude semantic analysis (async, catches indirect ideation)
+ * Layer 2: GPT-4o semantic analysis (async, catches indirect ideation)
  * Layer 3: Pattern-based deterioration (weekly analytics, separate service)
- *
- * This module handles Layers 1 and 2. Layer 3 lives in AnalyticsService.
  *
  * Safety invariant: false negatives are unacceptable. Tune for high recall.
  * A false positive (unnecessary helpline display) is always preferable to a miss.
  */
 
-const client = new Anthropic()
+const client = new OpenAI()
 
 // Layer 1: keyword lists in English and Hindi
 const CRITICAL_KEYWORDS_EN = [
@@ -153,18 +151,17 @@ Respond ONLY with valid JSON in this exact format:
 }`
 
   try {
-    const response = await client.messages.create({
+    const response = await client.chat.completions.create({
       model: AI_MODELS.CRISIS_ASSESSMENT,
       max_tokens: 256,
+      response_format: { type: 'json_object' },
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const content = response.content[0]
-    if (content?.type !== 'text') {
-      return layer1Result
-    }
+    const content = response.choices[0]?.message.content
+    if (!content) return layer1Result
 
-    const parsed = JSON.parse(content.text) as {
+    const parsed = JSON.parse(content) as {
       level: CrisisLevel
       triggerPhrases: string[]
       confidence: number
