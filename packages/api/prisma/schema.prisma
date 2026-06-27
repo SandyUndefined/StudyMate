@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  passwordHash       String
+  name               String
+  examType           String
+  examDate           DateTime
+  dateOfBirth        DateTime
+  isMinor            Boolean   @default(false)
+  parentalConsentAt  DateTime?
+  language           String    @default("en")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  journalEntries     JournalEntry[]
+  moodCheckIns       MoodCheckIn[]
+  mitraSessions      MitraSession[]
+  interventionLogs   InterventionCompletion[]
+  refreshTokens      RefreshToken[]
+  crisisEvents       CrisisEvent[]
+
+  @@index([email])
+}
+
+model JournalEntry {
+  id               String   @id @default(uuid())
+  userId           String
+  // Raw text is NEVER stored here — only the AES-256-GCM ciphertext from client
+  encryptedContent String
+  wordCount        Int
+  language         String   @default("en")
+  // Structured analysis extracted by AI — no raw text
+  sentimentScore   Float?
+  sentimentLabel   String?
+  energyInferred   Int?
+  stressTriggers   Json?    // TriggerPattern[]
+  cognitiveDistortions Json? // CognitiveDistortion[]
+  crisisLevel      String   @default("none")
+  keyThemes        Json?    // string[]
+  analysedAt       DateTime?
+  createdAt        DateTime @default(now())
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model MoodCheckIn {
+  id                   String   @id @default(uuid())
+  userId               String
+  energy               Int
+  anxiety              Int
+  motivation           Int
+  microPromptResponse  String?
+  checkInTime          String
+  createdAt            DateTime @default(now())
+
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model MitraSession {
+  id               String         @id @default(uuid())
+  userId           String
+  startedAt        DateTime       @default(now())
+  lastActivityAt   DateTime       @default(now())
+
+  messages         MitraMessage[]
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, lastActivityAt])
+}
+
+model MitraMessage {
+  id          String       @id @default(uuid())
+  sessionId   String
+  role        String       // 'user' | 'assistant'
+  content     String
+  language    String       @default("en")
+  crisisFlag  String       @default("none")
+  createdAt   DateTime     @default(now())
+
+  session     MitraSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+}
+
+model CrisisEvent {
+  id                  String   @id @default(uuid())
+  userId              String
+  sourceType          String   // 'journal' | 'chat'
+  sourceId            String
+  crisisLevel         String
+  triggerPhrases      Json     // string[]
+  confidence          Float
+  actionTaken         String
+  helplinesDisplayed  Boolean  @default(false)
+  reviewedByHuman     Boolean  @default(false)
+  reviewedAt          DateTime?
+  createdAt           DateTime @default(now())
+
+  user                User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  // Crisis events are append-only — never deleted
+  @@index([userId, createdAt])
+  @@index([reviewedByHuman, createdAt])
+}
+
+model InterventionCompletion {
+  id                 String   @id @default(uuid())
+  userId             String
+  interventionId     String
+  helpfulnessRating  Int
+  completedAt        DateTime @default(now())
+
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  userId      String
+  tokenHash   String   @unique
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([userId])
+}
+
+model EmotionalSummary {
+  id                        String   @id @default(uuid())
+  userId                    String
+  periodStart               DateTime
+  periodEnd                 DateTime
+  dominantSentiment         String
+  avgEnergy                 Float
+  avgAnxiety                Float
+  avgMotivation             Float
+  topStressTriggers         Json     // string[]
+  recentCognitiveDistortions Json    // string[]
+  crisisHistoryThisPeriod   Boolean  @default(false)
+  createdAt                 DateTime @default(now())
+
+  @@index([userId, periodStart])
+}

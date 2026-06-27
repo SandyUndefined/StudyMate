@@ -1,0 +1,70 @@
+{
+  "app": {
+    "name": "StudyMate",
+    "tagline": "Your mental game is your competitive advantage"
+  },
+  "nav": {
+    "journal": "Journal",
+    "mood": "Mood",
+    "chat": "Mitra",
+    "dashboard": "Insights"
+  },
+  "journal": {
+    "title": "Today's Journal",
+    "placeholder": "Write freely — this is your private space. No one else can read this.",
+    "submit": "Save Entry",
+    "submitting": "Saving...",
+    "success": "Entry saved",
+    "wordCount": "{{count}} words",
+    "promptLabel": "Today's prompt",
+    "minWords": "Write at least 20 words to save your entry"
+  },
+  "mood": {
+    "title": "How are you right now?",
+    "energy": "Energy",
+    "anxiety": "Anxiety",
+    "motivation": "Motivation",
+    "microPrompt": "One word for how you're walking into today (optional)",
+    "morningLabel": "Morning check-in",
+    "eveningLabel": "Evening check-in",
+    "submit": "Log Mood",
+    "submitted": "Mood logged"
+  },
+  "mitra": {
+    "title": "Mitra",
+    "subtitle": "Your companion",
+    "placeholder": "Tell Mitra what's on your mind...",
+    "send": "Send",
+    "thinking": "Mitra is thinking...",
+    "aiDisclosure": "Mitra is an AI companion — not a therapist. For emergencies, please call iCall: 9152987821",
+    "crisisMessage": "I hear you. You're not alone.",
+    "helplinesTitle": "If you need to talk to someone right now:"
+  },
+  "dashboard": {
+    "title": "Your Insights",
+    "resilienceScore": "Resilience Score",
+    "moodTrend": "Mood Over Time",
+    "topTriggers": "What's been on your mind",
+    "weeklyInsight": "This week's reflection",
+    "noData": "Keep journaling and logging your mood — insights appear after a few days"
+  },
+  "onboarding": {
+    "welcome": "Welcome to StudyMate",
+    "step1Title": "Which exam are you preparing for?",
+    "step2Title": "When is your exam?",
+    "step3Title": "Meet Mitra",
+    "step3Body": "Mitra is your AI companion — available anytime, completely private, here to listen.",
+    "getStarted": "Let's begin"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "No connection. Your entry will sync when you're back online.",
+    "sessionExpired": "Your session has expired. Please log in again."
+  },
+  "a11y": {
+    "moodSliderLabel": "{{dimension}} level, {{value}} out of 10",
+    "sendMessage": "Send message to Mitra",
+    "journalSubmit": "Submit journal entry",
+    "navItem": "Navigate to {{page}}"
+  }
+}
