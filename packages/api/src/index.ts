@@ -47,6 +47,7 @@ async function bootstrap(): Promise<void> {
   const mitraService = new MitraService(mitraRepo, summaryRepo, userRepo, crisisService)
 
   const app = express()
+  app.set('trust proxy', 1)
 
   // ── Security middleware ─────────────────────────────────────────────────────
   app.use(requestId())
