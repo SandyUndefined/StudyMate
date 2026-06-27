@@ -59,7 +59,7 @@ export const RATE_LIMITS = {
   JOURNAL_PER_HOUR: 10,
   CHAT_PER_HOUR: 30,
   MOOD_PER_HOUR: 20,
-  AUTH_PER_MINUTE: 5,
+  AUTH_PER_MINUTE: 20,
 } as const
 
 // AI model selection per use case
