@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "npx prisma generate && tsc",
+    "build": "cd ../shared && npx tsc && cd ../api && npx prisma generate && tsc",
     "start": "npx prisma db push --accept-data-loss && node dist/api/src/index.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
