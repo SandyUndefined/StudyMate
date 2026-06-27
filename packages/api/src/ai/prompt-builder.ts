@@ -1,3 +1,5 @@
+import Anthropic from '@anthropic-ai/sdk'
+import type { PromptCachingBetaTextBlockParam } from '@anthropic-ai/sdk/resources/beta/prompt-caching/messages'
 import type {
   EmotionalSummary,
   ExamContext,
@@ -55,20 +57,27 @@ export class MitraPromptBuilder {
   }
 
   /**
-   * Serializes the prompt into the string format sent to Claude's system field.
-   * The static base persona is eligible for Anthropic prompt caching.
+   * Serialises the prompt into the structured system array format for the Claude Messages API.
+   *
+   * Prompt caching strategy:
+   * - Block 1 (CACHEABLE): base persona + safety guardrails — static, changes never.
+   *   Marked with cache_control: { type: 'ephemeral' } so Claude caches it for 5 minutes.
+   *   Saves ~80% of system prompt tokens on every subsequent turn in a session.
+   * - Block 2 (DYNAMIC): student context + emotional history — changes per user/session.
+   *   Not cached — different per request.
+   *
+   * @see https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching
    */
-  serialize(prompt: MitraSystemPrompt): string {
-    const phaseGuidance = PHASE_GUIDANCE[prompt.examContext.currentPhase] ?? PHASE_GUIDANCE.foundation
+  serializeWithCaching(prompt: MitraSystemPrompt): PromptCachingBetaTextBlockParam[] {
+    const phaseGuidance =
+      PHASE_GUIDANCE[prompt.examContext.currentPhase] ?? PHASE_GUIDANCE['foundation']!
 
     const historySection =
       prompt.emotionalHistory.length > 0
         ? `\n## Student's Recent Emotional Patterns\n${this.serializeHistory(prompt.emotionalHistory)}`
         : ''
 
-    return `${prompt.basePersona}
-
-## Student Context
+    const dynamicBlock = `## Student Context
 - Name: ${prompt.userName}
 - Exam: ${prompt.examContext.examType}
 - Exam date: ${prompt.examContext.examDate.toDateString()} (${prompt.examContext.daysUntilExam} days away)
@@ -77,10 +86,26 @@ export class MitraPromptBuilder {
 
 ## Current Phase Guidance
 ${phaseGuidance}
-${historySection}
+${historySection}`
 
-## Safety Guardrails
-${prompt.safetyGuardrails}`
+    return [
+      // Block 1: CACHEABLE — static persona and safety rules
+      {
+        type: 'text' as const,
+        text: `${prompt.basePersona}\n\n## Safety Guardrails\n${prompt.safetyGuardrails}`,
+        cache_control: { type: 'ephemeral' as const },
+      } satisfies PromptCachingBetaTextBlockParam,
+      // Block 2: DYNAMIC — per-student, per-session context (not cached)
+      {
+        type: 'text' as const,
+        text: dynamicBlock,
+      } satisfies PromptCachingBetaTextBlockParam,
+    ]
+  }
+
+  /** Plain string serialisation — kept for tests and fallback use */
+  serialize(prompt: MitraSystemPrompt): string {
+    return this.serializeWithCaching(prompt).map((b) => b.text).join('\n\n')
   }
 
   private buildPersona(): string {

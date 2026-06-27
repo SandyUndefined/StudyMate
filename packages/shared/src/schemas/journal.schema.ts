@@ -9,6 +9,13 @@ export const CreateJournalEntrySchema = z.object({
     .max(100_000, 'Entry too large'),
   wordCount: z.number().int().min(1).max(10_000),
   language: z.enum(LANGUAGES),
+  /**
+   * Optional plaintext submitted alongside the ciphertext solely for AI analysis.
+   * The server processes it in-memory only — it is NEVER written to any database.
+   * Only the structured results (sentiment score, trigger tags) are persisted.
+   * The client controls whether to include this field; analysis is skipped if absent.
+   */
+  plaintextForAnalysis: z.string().max(10_000).optional(),
 })
 
 export const JournalQuerySchema = z.object({

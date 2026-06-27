@@ -41,9 +41,9 @@ async function bootstrap(): Promise<void> {
 
   // Services
   const authService = new AuthService(userRepo, db, env)
-  const journalService = new JournalService(journalRepo, userRepo)
-  const moodService = new MoodService(moodRepo)
   const crisisService = new CrisisService(db)
+  const journalService = new JournalService(journalRepo, userRepo, crisisService)
+  const moodService = new MoodService(moodRepo)
   const mitraService = new MitraService(mitraRepo, summaryRepo, userRepo, crisisService)
 
   const app = express()

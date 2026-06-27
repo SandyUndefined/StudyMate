@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import type { PromptCachingBetaTextBlockParam } from '@anthropic-ai/sdk/resources/beta/prompt-caching/messages'
 import { AI_MODELS, AI_CONTEXT } from '@studymate/shared'
 import type {
   MitraResponse,
@@ -78,7 +79,8 @@ export class MitraService {
       .withExamContext(examContext)
       .build()
 
-    const systemPrompt = promptBuilder.serialize(prompt)
+    // Cached system blocks: static persona cached, dynamic context not cached
+    const systemBlocks = promptBuilder.serializeWithCaching(prompt)
 
     // Get last N messages for conversation context (bounded to control tokens)
     const recentMessages = await this.sessions.getRecentMessages(
@@ -92,10 +94,10 @@ export class MitraService {
       const escalation = buildCrisisEscalationMessage(user.language)
       assistantContent = escalation
     } else {
-      const aiResponse = await anthropic.messages.create({
+      const aiResponse = await anthropic.beta.promptCaching.messages.create({
         model: AI_MODELS.MITRA_CONVERSATION,
         max_tokens: 512,
-        system: systemPrompt,
+        system: systemBlocks as PromptCachingBetaTextBlockParam[],
         messages: recentMessages.map((m) => ({
           role: m.role,
           content: m.content,

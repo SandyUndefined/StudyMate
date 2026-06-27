@@ -1,5 +1,8 @@
 import type { JournalEntry, CreateJournalEntryDTO, JournalPrompt, TriggerPattern } from '@studymate/shared'
 import type { IJournalRepository, IUserRepository } from '../db/repositories/interfaces'
+import type { PrismaJournalRepository } from '../db/repositories/journal.repository'
+import type { CrisisService } from './crisis.service'
+import { runJournalAnalysis } from '../jobs/journal-analysis.job'
 import { computeExamPhase } from './exam-context'
 
 const JOURNAL_PROMPTS: JournalPrompt[] = [
@@ -50,11 +53,30 @@ const JOURNAL_PROMPTS: JournalPrompt[] = [
 export class JournalService {
   constructor(
     private readonly journal: IJournalRepository,
-    private readonly users: IUserRepository
+    private readonly users: IUserRepository,
+    private readonly crisisService: CrisisService
   ) {}
 
-  async createEntry(userId: string, dto: CreateJournalEntryDTO): Promise<JournalEntry> {
-    return this.journal.create(userId, dto)
+  async createEntry(
+    userId: string,
+    dto: CreateJournalEntryDTO,
+    plaintextForAnalysis?: string
+  ): Promise<JournalEntry> {
+    const entry = await this.journal.create(userId, dto)
+
+    // Fire analysis in background — never blocks the HTTP response.
+    // plaintextForAnalysis is processed in-memory and never written to DB.
+    if (plaintextForAnalysis) {
+      void runJournalAnalysis(
+        { entryId: entry.id, userId, plaintextForAnalysis, language: dto.language },
+        this.journal as PrismaJournalRepository,
+        this.crisisService
+      ).catch((err: unknown) => {
+        console.error('[journal-analysis] background job failed:', err)
+      })
+    }
+
+    return entry
   }
 
   async getEntries(

@@ -21,7 +21,8 @@ export function createJournalRouter(journalService: JournalService): Router {
     async (req: Request, res: Response): Promise<void> => {
       try {
         const { userId } = req as AuthenticatedRequest
-        const entry = await journalService.createEntry(userId, req.body)
+        const { plaintextForAnalysis, ...dto } = req.body as { plaintextForAnalysis?: string } & typeof req.body
+        const entry = await journalService.createEntry(userId, dto, plaintextForAnalysis)
         res.status(201).json({ entry })
       } catch (err) {
         res.status(500).json({ error: 'Failed to save journal entry' })
