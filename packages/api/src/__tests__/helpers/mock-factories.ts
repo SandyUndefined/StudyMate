@@ -26,6 +26,7 @@ export function makeUser(overrides: Partial<User> = {}): User {
     isMinor: false,
     parentalConsentAt: null,
     createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
     ...overrides,
   }
 }
@@ -34,6 +35,7 @@ export function makeJournalEntry(overrides: Partial<JournalEntry> = {}): Journal
   return {
     id: 'entry-1',
     userId: 'user-1',
+    content: '',
     encryptedContent: 'encrypted-base64-content',
     wordCount: 120,
     language: 'en',
@@ -47,9 +49,9 @@ export function makeMitraSession(overrides: Partial<MitraSession> = {}): MitraSe
   return {
     id: 'session-1',
     userId: 'user-1',
+    messages: [],
     startedAt: new Date(),
-    lastMessageAt: new Date(),
-    messageCount: 0,
+    lastActivityAt: new Date(),
     ...overrides,
   }
 }
@@ -74,10 +76,8 @@ export function makeMoodCheckIn(overrides: Partial<MoodCheckIn> = {}): MoodCheck
     energy: 6,
     anxiety: 4,
     motivation: 7,
-    focus: 5,
-    physicalWellbeing: 6,
-    overallMood: 7,
-    notes: null,
+    microPromptResponse: null,
+    checkInTime: 'morning',
     createdAt: new Date(),
     ...overrides,
   }
@@ -95,16 +95,13 @@ export function makeCrisisAssessment(overrides: Partial<CrisisAssessment> = {}):
 
 export function makeEmotionalSummary(overrides: Partial<EmotionalSummary> = {}): EmotionalSummary {
   return {
-    id: 'summary-1',
-    userId: 'user-1',
     periodStart: new Date('2024-01-01'),
     periodEnd: new Date('2024-01-07'),
     dominantSentiment: 'neutral',
-    averageMoodScores: { energy: 6, anxiety: 4, motivation: 7, focus: 5, physicalWellbeing: 6 },
+    averageMoodScores: { energy: 6, anxiety: 4, motivation: 7 },
     topStressTriggers: ['mock tests', 'time management'],
     recentCognitiveDistortions: ['catastrophizing'],
-    resilienceScore: 65,
-    createdAt: new Date(),
+    crisisHistoryThisPeriod: false,
     ...overrides,
   }
 }

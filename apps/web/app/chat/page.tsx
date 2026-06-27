@@ -52,6 +52,7 @@ export default function ChatPage() {
         <div
           role="alert"
           aria-live="assertive"
+          data-testid="crisis-panel"
           className="bg-red-50 border-b border-red-100 px-4 py-4"
         >
           <p className="font-semibold text-red-800 mb-2 text-sm">
@@ -94,6 +95,9 @@ export default function ChatPage() {
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
+              data-testid="chat-message"
+              data-role={msg.role}
+              aria-label={`${msg.role === 'user' ? 'You' : 'Mitra'}: ${msg.content}`}
               className={`max-w-[80%] px-4 py-3 rounded-2xl text-base leading-relaxed ${
                 msg.role === 'user'
                   ? 'bg-indigo-600 text-white rounded-br-sm'
@@ -153,7 +157,8 @@ export default function ChatPage() {
         <button
           type="submit"
           disabled={isThinking}
-          aria-label="Send message to Mitra"
+          aria-label="Send message"
+          data-testid="send-button"
           className="w-12 h-12 flex-shrink-0 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">

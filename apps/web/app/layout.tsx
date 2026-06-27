@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { AuthProvider } from '../store/auth.store'
+import { LangSync } from '../components/atoms/LangSync'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
@@ -31,6 +32,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to main content
         </a>
         <AuthProvider>
+          {/* Syncs html[lang] to user's language preference — WCAG 3.1.1 */}
+          <LangSync />
           <main id="main-content">{children}</main>
         </AuthProvider>
       </body>

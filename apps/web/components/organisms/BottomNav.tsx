@@ -26,7 +26,7 @@ export function BottomNav() {
               <Link
                 href={href}
                 className={`flex flex-col items-center justify-center py-3 gap-1 min-h-[56px] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-colors ${
-                  isActive ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'
+                  isActive ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-700'
                 }`}
                 aria-label={`Navigate to ${label}`}
                 aria-current={isActive ? 'page' : undefined}

@@ -88,7 +88,8 @@ export default function MoodPage() {
                   onChange={() => setCheckInTime(time)}
                   className="sr-only"
                 />
-                {time === 'morning' ? '🌅 Morning' : '🌙 Evening'}
+                <span aria-hidden="true">{time === 'morning' ? '🌅' : '🌙'}</span>
+                <span className="ml-1.5">{time === 'morning' ? 'Morning' : 'Evening'}</span>
               </label>
             ))}
           </div>
@@ -171,8 +172,10 @@ export default function MoodPage() {
           disabled={status === 'saving'}
           className="w-full py-4 bg-indigo-600 text-white rounded-xl font-semibold text-base hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 disabled:opacity-50 transition-colors"
           aria-label="Log mood check-in"
+          aria-busy={status === 'saving'}
+          data-testid="mood-submit"
         >
-          {status === 'saving' ? 'Logging...' : status === 'saved' ? 'Logged!' : 'Log Mood'}
+          {status === 'saving' ? 'Logging...' : status === 'saved' ? 'Logged! ✓' : 'Log Mood'}
         </button>
       </form>
     </div>

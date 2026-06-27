@@ -1,6 +1,5 @@
-import type { Config } from 'jest'
-
-const config: Config = {
+/** @type {import('jest').Config} */
+module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   rootDir: '.',
@@ -11,7 +10,6 @@ const config: Config = {
   transform: {
     '^.+\\.ts$': ['ts-jest', {
       tsconfig: {
-        // Relax for tests — strict null checks still apply
         noUnusedLocals: false,
       },
     }],
@@ -23,7 +21,7 @@ const config: Config = {
     '!src/**/__tests__/**',
   ],
   coverageReporters: ['text', 'lcov'],
-  coverageThresholds: {
+  coverageThreshold: {
     global: {
       branches: 70,
       functions: 80,
@@ -31,5 +29,3 @@ const config: Config = {
     },
   },
 }
-
-export default config

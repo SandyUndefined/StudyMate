@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useId } from 'react'
+import React, { useState, useId } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../../store/auth.store'
@@ -276,21 +276,28 @@ function Field({
   label: string
   hint?: string
   error?: string
-  children: React.ReactNode
+  children: React.ReactElement<React.InputHTMLAttributes<HTMLInputElement> & React.SelectHTMLAttributes<HTMLSelectElement>>
 }) {
   const id = useId()
   const hintId = useId()
   const errorId = useId()
+
+  // Build aria-describedby from whichever helper text is visible
+  const describedBy = [hint && !error ? hintId : null, error ? errorId : null]
+    .filter(Boolean)
+    .join(' ') || undefined
 
   return (
     <div>
       <label htmlFor={id} className="block text-sm font-medium text-slate-700 mb-1.5">
         {label}
       </label>
-      {/* Clone child to inject id and aria-describedby */}
-      <div>
-        {children}
-      </div>
+      {/* Inject id and aria-describedby into the single child input/select */}
+      {React.cloneElement(children, {
+        id,
+        'aria-describedby': describedBy,
+        'aria-invalid': error ? ('true' as const) : undefined,
+      } as React.HTMLAttributes<HTMLElement>)}
       {hint && !error && (
         <p id={hintId} className="mt-1 text-xs text-slate-400">
           {hint}

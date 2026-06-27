@@ -84,8 +84,8 @@ export default function JournalPage() {
                 : `${wordCount} words`}
             </span>
             {status === 'saved' && (
-              <span className="text-sm text-green-600 font-medium" role="status">
-                Entry saved
+              <span className="text-sm text-green-600 font-medium" role="status" data-testid="save-success">
+                <span aria-hidden="true">✓</span> Entry saved
               </span>
             )}
           </div>
